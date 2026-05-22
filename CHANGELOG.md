@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- Added TUI call rendering for MCP proxy and direct tool inputs. Thanks @dmmulroy for PR #102.
+
 ## [2.6.1] - 2026-05-13
 
 ### Added

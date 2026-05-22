@@ -61,6 +61,8 @@ export function formatMcpProxyToolCallLines(
   args: McpProxyToolCallInput,
   maxInputChars = DEFAULT_MAX_CALL_INPUT_CHARS,
 ): string[] {
+  if (args.action === "ui-messages") return [`mcp ${args.action}`];
+
   if (args.tool) {
     const target = args.server ? `${args.tool} @ ${args.server}` : args.tool;
     const lines = [`mcp call ${target}`];

@@ -40,6 +40,10 @@ describe("MCP tool call renderer", () => {
     expect(formatMcpProxyToolCallLines({})).toEqual(["mcp status"]);
   });
 
+  it("renders ui-messages with execution precedence", () => {
+    expect(formatMcpProxyToolCallLines({ action: "ui-messages", server: "cf-portal" })).toEqual(["mcp ui-messages"]);
+  });
+
   it("shows direct tool calls with JSON arguments", () => {
     const display = formatMcpDirectToolCallLines("cf-portal_list_worker_tail_events", {
       accountId: "abc",
