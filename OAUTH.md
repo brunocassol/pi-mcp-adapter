@@ -19,7 +19,7 @@ The Pi MCP Adapter uses the official MCP SDK's built-in OAuth implementation, wh
 - ✅ **Auto-Discovery** - Discovers OAuth endpoints from server metadata
 - ✅ **Automatic Token Refresh** - SDK handles expired tokens automatically
 - ✅ **State Parameter Validation** - CSRF protection
-- ✅ **Secure Token Storage** - Stored in `~/.pi/agent/mcp-oauth/<server>/tokens.json`
+- ✅ **Secure Token Storage** - Stored in `~/.pi/agent/mcp-oauth/sha256-<server-hash>/tokens.json`
 
 ## Configuration
 
@@ -194,7 +194,7 @@ A Node.js HTTP server runs on `localhost` at path `/callback`:
 
 ## Token Storage
 
-Tokens are stored per-server in `~/.pi/agent/mcp-oauth/<server>/tokens.json`:
+Tokens are stored per-server in `~/.pi/agent/mcp-oauth/sha256-<server-hash>/tokens.json`. The hash is derived from the configured MCP server name, so any valid config key can be used without becoming a filesystem path component:
 
 ```json
 {
@@ -215,9 +215,9 @@ Tokens are stored per-server in `~/.pi/agent/mcp-oauth/<server>/tokens.json`:
 Example directory structure:
 ```
 ~/.pi/agent/mcp-oauth/
-├── linear/
+├── sha256-<linear-server-name-hash>/
 │   └── tokens.json
-├── github/
+├── sha256-<github-server-name-hash>/
 │   └── tokens.json
 └── ...
 ```
@@ -236,7 +236,7 @@ A cryptographically secure random state parameter is generated for each flow and
 
 ### File Permissions
 
-Token files (`tokens.json`) are created with `0o600` permissions and stored in per-server directories with `0o700` permissions (readable only by owner).
+Token files (`tokens.json`) are created with `0o600` permissions and stored in hashed per-server directories with `0o700` permissions (readable only by owner).
 
 ### URL Validation
 
@@ -285,7 +285,7 @@ If the browser fails to open (e.g., in SSH sessions), the authorization URL will
 
 The OAuth implementation uses the following modules:
 
-- `mcp-auth.ts` - Auth storage and retrieval (per-server `tokens.json` files)
+- `mcp-auth.ts` - Auth storage and retrieval (hashed per-server `tokens.json` files)
 - `mcp-oauth-provider.ts` - SDK OAuthClientProvider implementation
 - `mcp-callback-server.ts` - Node.js HTTP callback server
 - `mcp-auth-flow.ts` - High-level auth flow using SDK transport

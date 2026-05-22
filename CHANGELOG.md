@@ -10,6 +10,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Added TUI call rendering for MCP proxy and direct tool inputs. Thanks @dmmulroy for PR #102.
 
+### Fixed
+- Hardened OAuth credential storage paths against server-name path traversal without rejecting valid configured server names.
+- Rejected unsafe regex-mode MCP search patterns before executing them.
+
 ## [2.6.1] - 2026-05-13
 
 ### Added

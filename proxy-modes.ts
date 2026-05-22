@@ -1,4 +1,5 @@
 import type { AgentToolResult, ToolInfo } from "@earendil-works/pi-coding-agent";
+import { checkSync } from "recheck";
 import type { McpExtensionState } from "./state.ts";
 import type { ToolMetadata, McpContent } from "./types.ts";
 import { getServerPrefix, parseUiPromptHandoff } from "./types.ts";
@@ -10,6 +11,13 @@ import { formatAuthRequiredMessage, truncateAtWord } from "./utils.ts";
 import { authenticate, supportsOAuth } from "./mcp-auth-flow.ts";
 
 type ProxyToolResult = AgentToolResult<Record<string, unknown>>;
+
+const MAX_REGEX_SEARCH_QUERY_LENGTH = 256;
+const REGEX_SAFETY_CHECK_PARAMS = {
+  attackTimeout: 50,
+  incubationTimeout: 50,
+  timeout: 250,
+} as const;
 
 type AutoAuthResult =
   | { status: "skipped" }
@@ -258,7 +266,30 @@ export function executeSearch(
   let pattern: RegExp;
   try {
     if (regex) {
+      if (query.length > MAX_REGEX_SEARCH_QUERY_LENGTH) {
+        return {
+          content: [{ type: "text" as const, text: `Regex query is too long; maximum length is ${MAX_REGEX_SEARCH_QUERY_LENGTH} characters.` }],
+          details: { mode: "search", error: "query_too_long", query, maxLength: MAX_REGEX_SEARCH_QUERY_LENGTH },
+        };
+      }
+
       pattern = new RegExp(query, "i");
+      let safety;
+      try {
+        safety = checkSync(query, "i", REGEX_SAFETY_CHECK_PARAMS);
+      } catch (error) {
+        const message = error instanceof Error ? error.message : String(error);
+        return {
+          content: [{ type: "text" as const, text: "Regex query rejected because safety analysis failed." }],
+          details: { mode: "search", error: "unsafe_pattern", query, reason: message },
+        };
+      }
+      if (safety.status !== "safe") {
+        return {
+          content: [{ type: "text" as const, text: `Regex query rejected as unsafe (${safety.status}).` }],
+          details: { mode: "search", error: "unsafe_pattern", query, safetyStatus: safety.status },
+        };
+      }
     } else {
       const terms = query.trim().split(/\s+/).filter(t => t.length > 0);
       if (terms.length === 0) {
